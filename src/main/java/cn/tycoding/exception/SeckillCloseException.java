@@ -2,6 +2,7 @@ package cn.tycoding.exception;
 
 /**
  * 秒杀关闭异常
+ *
  * @auther TyCoding
  * @date 2018/10/8
  */
