@@ -113,18 +113,21 @@ public class SeckillServiceImpl implements SeckillService {
      * 1.保证事务方法的执行时间尽可能短，不要穿插其他网络操作PRC/HTTP请求（可以将这些请求剥离出来）
      * 2.不是所有的方法都需要事务控制，如只有一条修改的操作、只读操作等是不需要进行事务控制的
      * <p>
-     * Spring默认只对运行期异常进行事务的回滚操作，对于编译异常Spring是不进行回滚的，所以对于需要进行事务控制的方法尽可能将可能抛出的异常都转换成运行期异常
+     * Spring默认只对运行期异常进行事务的回滚操作，对于编译异常Spring是不进行回滚的，所以对于
+     * 需要进行事务控制的方法尽可能将可能抛出的异常都转换成运行期异常
      */
     @Override
     @Transactional
     public SeckillExecution executeSeckill(long seckillId, BigDecimal money, long userPhone, String md5)
             throws SeckillException, RepeatKillException, SeckillCloseException {
+        //1.判断请求地址是否正确
         if (md5 == null || !md5.equals(getMD5(seckillId))) {
             throw new SeckillException("seckill data rewrite");
         }
-        //执行秒杀逻辑：1.减库存；2.储存秒杀订单
+        //执行秒杀逻辑：
+        // 1.减库存；
+        // 2.储存秒杀订单
         Date nowTime = new Date();
-
         try {
             //记录秒杀订单信息
             int insertCount = seckillOrderMapper.insertOrder(seckillId, money, userPhone);
@@ -141,7 +144,6 @@ public class SeckillServiceImpl implements SeckillService {
                 } else {
                     //秒杀成功
                     SeckillOrder seckillOrder = seckillOrderMapper.findById(seckillId, userPhone);
-
                     //更新缓存（更新库存数量）
                     Seckill seckill = (Seckill) redisTemplate.boundHashOps(key).get(seckillId);
                     seckill.setStockCount(seckill.getSeckillId() - 1);
